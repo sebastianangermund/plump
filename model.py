@@ -267,9 +267,6 @@ class Plump:
             tmp.append(self.players[(i + 1) % len(self.players)])
         self.players = tmp
 
-    def _update_ledger(self, result):
-        pass
-
     def _give_points(self, result):
         # calculate and update player.points
         # reset player.round_wins and player.guess
@@ -286,7 +283,6 @@ class Plump:
             round = Round(dealer, round, self.rounds, self.players)
             result = round.play()
             self._give_points(result)
-            self._update_ledger(result)
             self._arrange_wrt_dealer()
             self.round_count += 1
         print('\n'*10)

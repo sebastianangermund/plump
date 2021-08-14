@@ -2,8 +2,8 @@
 from model import Plump
 
 
-players = ['Agge', 'Lise']
-num_bots = 2
+players = ['Agge']
+num_bots = 1
 duration = 5
 # duration = 10
 # duration = 15
