@@ -248,9 +248,7 @@ class Plump:
     }
 
     def __init__(self, **kwargs):
-        humans = [Player(name) for name in kwargs['players']]
-        bots = [Player() for i in range(kwargs['num_bots'])]
-        self.players = humans + bots
+        self.players = [Player(name) for name in kwargs['players']]
         self.rounds = self.durations[kwargs['duration']]
         self.ledger = self._set_game_ledger()
         self.round_count = 0
@@ -268,8 +266,6 @@ class Plump:
         self.players = tmp
 
     def _give_points(self, result):
-        # calculate and update player.points
-        # reset player.round_wins and player.guess
         for player, wins in result.items():
             if player.guess == wins:
                 if wins == 0:
