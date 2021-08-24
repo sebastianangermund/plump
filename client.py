@@ -310,7 +310,6 @@ if __name__ == "__main__":
         pass
     # Start the actual main loop.
     game_loop_is_running = True
-    old_game_message = ""
     while game_loop_is_running:
         # Safely access the synchronized shared game state.
         with client.access_game_state() as game_state:
@@ -318,8 +317,10 @@ if __name__ == "__main__":
             if old_game_message == game_state.message:
                 time.sleep(1)
                 continue
-            print(game_state.message, "\n")
-            old_game_message = game_state.message
+            if game_state.message:
+                print(game_state.message, "\n")
+            if not game_state.turn_id == client.player_id:
+                continue
             client.dispatch_event(
                 event_type="MOVE",
                 player_id=client.player_id,

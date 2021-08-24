@@ -1,42 +1,51 @@
 import random
 from pygase import GameState, Backend
-
+from model import Plump, Round
 
 ### SETUP ###
 
 # Initialize the game state.
 initial_game_state = GameState(
     players={},  # dict with `player_id: player_dict` entries
-    chaser_id=None,  # id of player who is chaser
-    protection=None,  # wether protection from the chaser is active
-    countdown=0.0,  # countdown until protection is lifted
-    message = "",
+    turn_id=None,
+    game_initialized=False,
+    message=None,
+    payload=None,
+    num_players=2,
 )
+
+game = Plump({"duration": 5})
 
 # Define the game loop iteration function.
 def time_step(game_state, dt):
-    # Before a player joins, updating the game state is unnecessary.
-    if game_state.chaser_id is None:
+    # Before all players join, updating the game state is unnecessary.
+    if len(game_state.players.keys()) < game_state.num_players:
         return {}
-    # Update state message
-    if len(game_state.players.keys()) > 1:
-        backend.server.dispatch_event(event_type="MESSAGE", message="we are more than one player!")
-    # If protection mode is on, all players are safe from the chaser.
-    if game_state.protection:
-        new_countdown = game_state.countdown - dt
-        return {"countdown": new_countdown, "protection": True if new_countdown >= 0.0 else False}
-    # Check if the chaser got someone.
-    chaser = game_state.players[game_state.chaser_id]
-    for player_id, player in game_state.players.items():
-        if not player_id == game_state.chaser_id:
-            # Calculate their distance to the chaser.
-            dx = player["position"][0] - chaser["position"][0]
-            dy = player["position"][1] - chaser["position"][1]
-            distance_squared = dx * dx + dy * dy
-            # Whoever the chaser touches becomes the new chaser and the protection countdown starts.
-            if distance_squared < 15:
-                print(f"{player['name']} has been caught")
-                return {"chaser_id": player_id, "protection": True, "countdown": 5.0}
+    
+    if not game_state.game_initialized:
+        players = [player["name"] for player_id, player in game_state.players.items()]
+        game.players.append(players)
+        return {"game_initialized": True}
+
+    for round in game.rounds:
+        dealer = game.players[-1]
+        round = Round(dealer, round, game.rounds, game.players)
+        result = round.play()
+        game._give_points(result)
+        game._arrange_wrt_dealer()
+        game.round_count += 1
+    print('\n'*10)
+    print('End of game!\n\tFinal score was:')
+    for player in self.players:
+        print(player, player.score)
+
+    playing = game_state.players[game_state.turn_id]
+
+    # for player_id, player in game_state.players.items():
+    #     if not player_id == game_state.turn_id:
+    #         pass
+    #         print(f"{player['name']} has been caught")
+    #         return {"turn_id": player_id, "protection": True, "countdown": 5.0}
     return {}
 
 
@@ -59,9 +68,9 @@ def on_join(player_name, game_state, client_address, **kwargs):
     backend.server.dispatch_event("PLAYER_CREATED", player_id, target_client=client_address)
     return {
         # Add a new entry to the players dict
-        "players": {player_id: {"name": player_name, "position": (random.random() * 640, random.random() * 420)}},
+        "players": {player_id: {"name": player_name, "points": 0}},
         # If this is the first player to join, make it the chaser.
-        "chaser_id": player_id if game_state.chaser_id is None else game_state.chaser_id,
+        "turn_id": player_id if game_state.turn_id is None else game_state.turn_id,
     }
 
 

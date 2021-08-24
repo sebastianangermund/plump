@@ -101,10 +101,9 @@ class Player:
 
 class Round:
 
-    def __init__(self, dealer, round, rounds, players):
-        self.dealer = dealer
-        self.round_count = round
-        self.rounds = rounds
+    def __init__(self, round, round_count, players):
+        self.round = round
+        self.round_count = round_count
         self.players = players
         self.wins = {player: 0 for player in self.players}
         self.deck = Deck()
@@ -171,7 +170,7 @@ class Round:
         return guesses.index(max(guesses))
 
     def play_round(self):
-        for i in range(self.round_count):
+        for i in range(self.round):
             self.start_index = self._get_first_player()
             print(f'\n{self.players[self.start_index]} starts playing\n')
             for j in range(len(self.players)):
@@ -195,7 +194,7 @@ class Round:
             self._part_round_end()
 
     def guess_wins(self):
-        max_guess = self.round_count
+        max_guess = self.round
         for guesser in self.players:
             print(f'\n\t{guesser}\'s cards: {guesser.hand.list_()}')
             try:
@@ -214,18 +213,18 @@ class Round:
             print(f'\n{guesser} guessed {guesser.guess}. Next players turn.\n')
 
     def deal(self):
-        num_cards = self.round_count
+        num_cards = self.round
         for recipiant in self.players:
             print(f'Dealing {num_cards} to {recipiant.__str__()}')
             for i in range(num_cards):
                 recipiant.hand.put(self.deck.deal())
 
     def init_round(self):
-        print(f'\n\tRound {self.round_count - 1} is about to start.' \
+        print(f'\n\tRound {self.round_count + 1} is about to start.' \
               ' The standings are:')
         for player in self.players:
             print(f'\t\t{player.__str__()}: {player.score} points.')
-        print(f'\n\t{self.dealer.__str__()} is the dealer.')
+        print(f'\n\t{self.players[-1].__str__()} is the dealer.')
         input('\tWhen ready, press Enter.\n')
         self.deck.shuffle()
         print('Deck shuffled - OK\n')
@@ -241,23 +240,23 @@ class Round:
 class Plump:
     """
     """
-    durations = {
+    round_options = {
         5: [2,3,4,3,2],
         9: [2,3,4,5,6,7,5,4,3,2],
         15: [2,3,4,5,6,7,8,9,8,7,6,5,4,3,2],
     }
+    state = {
+        "rounds": [],
+        "score": {},
+        "round_count": 0,
+        "game_over": False,
+    }
 
-    def __init__(self, **kwargs):
-        self.players = [Player(name) for name in kwargs['players']]
-        self.rounds = self.durations[kwargs['duration']]
-        self.ledger = self._set_game_ledger()
+    def __init__(self):
+        self.players = []
+        self.rounds = []
         self.round_count = 0
-
-    def _set_game_ledger(self):
-        ledger = {}
-        for player in self.players:
-            ledger[player] = [0 for el in range(len(self.rounds))]
-        return ledger
+        self.game_over = False
 
     def _arrange_wrt_dealer(self):
         tmp = []
@@ -273,17 +272,25 @@ class Plump:
                 else:
                     player.score += wins * 10
 
-    def play(self):
-        for round in self.rounds:
-            dealer = self.players[-1]
-            round = Round(dealer, round, self.rounds, self.players)
-            result = round.play()
-            self._give_points(result)
-            self._arrange_wrt_dealer()
-            self.round_count += 1
-        print('\n'*10)
-        print('End of game!\n\tFinal score was:')
-        for player in self.players:
-            print(player, player.score)
+    def setup_game(self, player_list, duration):
+        self.rounds = self.round_options[duration]
+        for player in player_list:
+            self.players.append(Player(player))
 
-        
+    def update_state(self, result):
+        if self.round_count == len(self.rounds) - 1:
+            self.game_over = True
+            return
+        self._give_points(result)
+        self._arrange_wrt_dealer()
+        self.round_count += 1
+
+    def get_state(self):
+        score = {player.__str__(): player.score for player in self.players}
+        state = {
+            "rounds": self.rounds,
+            "score": score,
+            "round_count": self.round_count,
+            "game_over": self.game_over,
+        }
+        return state
