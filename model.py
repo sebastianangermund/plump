@@ -100,11 +100,22 @@ class Player:
 
 
 class Round:
-
+    """
+    state = {
+        "wins": {player: 0 for player in self.players},
+        "dealt": {player: None for player in self.players},
+        "dealer"; None,
+        "player": None,
+        "error": False,
+        "message": "",
+    }
+    """
     def __init__(self, round, round_count, players):
         self.round = round
         self.round_count = round_count
         self.players = players
+        self.first_player = None
+        self.dealer = None
         self.wins = {player: 0 for player in self.players}
         self.deck = Deck()
         self.dealt = {player: None for player in self.players}
@@ -172,7 +183,8 @@ class Round:
     def play_round(self):
         for i in range(self.round):
             self.start_index = self._get_first_player()
-            print(f'\n{self.players[self.start_index]} starts playing\n')
+            self.first_player = self.players[self.start_index]
+            print(f'\n{self.first_player} starts playing\n')
             for j in range(len(self.players)):
                 player = self.players[(self.start_index + j) % len(self.players)]
                 print(f'\t{player}\'s hand: {player.hand.list_()}, with guess {player.guess}')
@@ -229,27 +241,34 @@ class Round:
         self.deck.shuffle()
         print('Deck shuffled - OK\n')
 
-    def play(self):
-        self.init_round()
-        self.deal()
-        self.guess_wins()
-        self.play_round()
-        return self.wins
+    def get_state(self, message, error):
+        wins = {player.__str__(): wins for player, wins in self.wins.items()}
+        dealt = {player.__str__(): dealt for player, dealt in self.dealt.items()}
+        state = {
+            "wins": wins,
+            "dealt": dealt,
+            "dealer": self.players[-1].__str__(),
+            "player": self.first_player.__str__(),
+            "error": error,
+            "message": message,
+        }
+        return state
 
 
 class Plump:
     """
+    state = {
+        "rounds": [2,3,2],
+        "score": {player.__str__(): player.score for player in self.players},
+        "round_count": 0,
+        "game_over": False,
+    }
     """
     round_options = {
+        3: [2,3,2],
         5: [2,3,4,3,2],
         9: [2,3,4,5,6,7,5,4,3,2],
         15: [2,3,4,5,6,7,8,9,8,7,6,5,4,3,2],
-    }
-    state = {
-        "rounds": [],
-        "score": {},
-        "round_count": 0,
-        "game_over": False,
     }
 
     def __init__(self):
