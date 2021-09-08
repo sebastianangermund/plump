@@ -158,7 +158,7 @@ class Round:
                     return None
                 try:
                     guess = int(input(f'\t{guesser.__str__()}, invalid last guess. Try again: '))
-                    if not 0 <= guess <= max_guess:
+                    if not 0 <= guess < max_guess:
                          continue
                 except TypeError:
                     continue
