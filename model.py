@@ -106,7 +106,6 @@ class Round:
         "dealt": {player: None for player in self.players},
         "dealer"; None,
         "player": None,
-        "error": False,
         "message": "",
     }
     """
@@ -121,6 +120,11 @@ class Round:
         self.dealt = {player: None for player in self.players}
         self.start_index = 0
         self.last_win = None
+
+        self.message = ''
+        self.init_done = False
+        self.deal_done = False
+        self.guess_done = []
 
     def _part_round_end(self):
         # update self.wins based on self.dealt
@@ -226,38 +230,41 @@ class Round:
 
     def deal(self):
         num_cards = self.round
+        message = ''
         for recipiant in self.players:
-            print(f'Dealing {num_cards} to {recipiant.__str__()}')
+            message += f'Dealing {num_cards} to {recipiant.__str__()}\n'
             for i in range(num_cards):
                 recipiant.hand.put(self.deck.deal())
+        self.message = message
+        self.deal_done = True
 
     def init_round(self):
-        print(f'\n\tRound {self.round_count + 1} is about to start.' \
-              ' The standings are:')
+        message = f'Round {self.round_count + 1} is about to start. The standings are:'
         for player in self.players:
-            print(f'\t\t{player.__str__()}: {player.score} points.')
-        print(f'\n\t{self.players[-1].__str__()} is the dealer.')
-        input('\tWhen ready, press Enter.\n')
+            message += f'\n{player.__str__()}: {player.score} points.'
+        message += f'\n{self.players[-1].__str__()} is the dealer.'
         self.deck.shuffle()
-        print('Deck shuffled - OK\n')
+        message += 'Deck shuffled - Ready to start playing\n'
+        self.message = message
+        self.init_done = True
 
-    def get_state(self, message, error):
+    def get_state(self):
         wins = {player.__str__(): wins for player, wins in self.wins.items()}
         dealt = {player.__str__(): dealt for player, dealt in self.dealt.items()}
         state = {
+            "init_done": self.init_done,
             "wins": wins,
             "dealt": dealt,
             "dealer": self.players[-1].__str__(),
             "player": self.first_player.__str__(),
-            "error": error,
-            "message": message,
+            "message": self.message,
         }
         return state
 
 
 class Plump:
     """
-    state = {
+    example_state = {
         "rounds": [2,3,2],
         "score": {player.__str__(): player.score for player in self.players},
         "round_count": 0,

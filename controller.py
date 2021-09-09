@@ -18,14 +18,11 @@ if __name__ == '__main__':
         round_count = game.round_count
         round = Round(game.rounds[round_count], round_count, game.players)
 
-
-        # result = round.play()
         round.init_round()
         round.deal()
         round.guess_wins()
         round.play_round()
         result = round.wins
-
 
         game.update_state(result)
         print(game.get_state())
