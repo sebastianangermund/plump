@@ -44,7 +44,7 @@ class Deck:
                       for suite in Card.trump_suites]
 
     def __str__(self):
-        return f'{self.cards[0]}'
+        return str(self.cards)
 
     def list_(self):
         return [card.__str__() for card in self.cards]
@@ -120,8 +120,8 @@ class Round:
         self.dealt = {player: None for player in self.players}
         self.start_index = 0
         self.last_win = None
-
         self.message = ''
+
         self.init_done = False
         self.deal_done = False
         self.guess_done = []
@@ -154,20 +154,12 @@ class Round:
 
     def _wrong_input(self, guesser, max_guess, last_guess=False):
         if last_guess:
-            while True:
-                sum_guesses = 0
-                for player in self.players:
-                    sum_guesses += player.guess
-                if not sum_guesses == max_guess:
-                    return None
-                try:
-                    guess = int(input(f'\t{guesser.__str__()}, invalid last guess. Try again: '))
-                    if not 0 <= guess < max_guess:
-                         continue
-                except TypeError:
-                    continue
-                break
-            return guess
+            sum_guesses = 0
+            for player in self.players:
+                sum_guesses += player.guess
+            if not sum_guesses == max_guess:
+                return None
+            self.message = f'\n{guesser.__str__()}, invalid last guess. Try again'
 
         while True:
             try:
@@ -209,24 +201,36 @@ class Round:
                 print('\n')
             self._part_round_end()
 
-    def guess_wins(self):
+    def guess_wins(self, guess=None):
         max_guess = self.round
         for guesser in self.players:
-            print(f'\n\t{guesser}\'s cards: {guesser.hand.list_()}')
+            if guesser in self.guess_done:
+                continue
+            if not guess:
+                self.message = f'\n{guesser.__str__()}, '\
+                                'place your guess to how many rounds you\'ll win'
+                return
             try:
-                guess = int(input(f'\t{guesser.__str__()}, place your guess to how many rounds you\'ll win: '))
-                if not 0 <= guess <= max_guess:
-                     guess = self._wrong_input(guesser, max_guess)
+                if not 0 <= int(guess) <= max_guess:
+                     self.message = f'\t{guesser.__str__()}, invalid input. Try again'
+                     return
             except (TypeError, ValueError):
-                guess = self._wrong_input(guesser, max_guess)
+                self.message = f'\t{guesser.__str__()}, invalid input. Try again'
+                return
             guesser.guess = guess
             if guesser is self.players[-1]:
-                new_guess = self._wrong_input(guesser, max_guess, last_guess=True)
-                if new_guess:
-                    guesser.guess = new_guess
-                print(f'\n{guesser} guessed {guesser.guess}. That was the last guess. Moving on')
+                sum_guesses = 0
+                for player in self.players:
+                    sum_guesses += player.guess
+                if not sum_guesses == max_guess:
+                    self.message = f'\n{guesser} guessed {guesser.guess}. That was the last guess. Moving on'
+                    self.guess_done.append(guesser)
+                    return
+                self.message = f'\n{guesser.__str__()}, invalid last guess. Try again'
                 return
-            print(f'\n{guesser} guessed {guesser.guess}. Next players turn.\n')
+            self.message = f'\n{guesser} guessed {guesser.guess}. Next players turn.'
+            self.guess_done.append(guesser)
+            return
 
     def deal(self):
         num_cards = self.round
@@ -251,13 +255,15 @@ class Round:
     def get_state(self):
         wins = {player.__str__(): wins for player, wins in self.wins.items()}
         dealt = {player.__str__(): dealt for player, dealt in self.dealt.items()}
+        hands = {player.__str__(): player.hand.__str__() for player in self.players}
         state = {
-            "init_done": self.init_done,
+            "init_done": str(self.init_done),
             "wins": wins,
             "dealt": dealt,
             "dealer": self.players[-1].__str__(),
             "player": self.first_player.__str__(),
             "message": self.message,
+            "hands": hands,
         }
         return state
 
