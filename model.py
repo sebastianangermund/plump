@@ -124,7 +124,7 @@ class Round:
 
         self.init_done = False
         self.deal_done = False
-        self.guess_done = []
+        self.guess_done = [] # True if len(self.guess_done) == len(self.players)
 
     def _part_round_end(self):
         # update self.wins based on self.dealt
