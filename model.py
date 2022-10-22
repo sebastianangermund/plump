@@ -148,27 +148,26 @@ class Round:
     def _check_valid_play(self):
         pass
 
-    def _wrong_input(self, guesser, max_guess, last_guess=False):
-        if last_guess:
-            while True:
-                sum_guesses = 0
-                for player in self.players:
-                    sum_guesses += player.guess
-                if not sum_guesses == max_guess:
-                    return None
-                try:
-                    guess = int(input(f'\t{guesser.__str__()}, invalid last guess. Try again: '))
-                    if not 0 <= guess < max_guess:
-                         continue
-                except TypeError:
-                    continue
-                break
-            return guess
+    def _validate_last_guess(self, guesser, max_guess):
+        while True:
+            sum_guesses = 0
+            for player in self.players:
+                sum_guesses += player.guess
+            if not sum_guesses == max_guess:
+                return
+            try:
+                guess = int(input(f'\t{guesser.__str__()}, invalid last guess. Try again: '))
+                if not 0 <= guess <= max_guess:
+                        continue
+            except (TypeError, ValueError):
+                continue
+            guesser.guess = guess
 
+    def _wrong_input(self, guesser, max_guess):
         while True:
             try:
                 guess = int(input(f'\t{guesser.__str__()}, invalid input. Try again: '))
-                if not 0 <= guess <= max_guess:
+                if not 1 <= guess <= max_guess:
                      continue
             except (TypeError, ValueError):
                 continue
@@ -217,9 +216,7 @@ class Round:
                 guess = self._wrong_input(guesser, max_guess)
             guesser.guess = guess
             if guesser is self.players[-1]:
-                new_guess = self._wrong_input(guesser, max_guess, last_guess=True)
-                if new_guess:
-                    guesser.guess = new_guess
+                self._validate_last_guess(guesser, max_guess)
                 print(f'\n{guesser} guessed {guesser.guess}. That was the last guess. Moving on')
                 return
             print(f'\n{guesser} guessed {guesser.guess}. Next players turn.\n')

@@ -1,0 +1,49 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "ecb7bdeb9488296b0f5beeb135005877ecbb344b70024cd9c1545130e1995c95"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.9"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {},
+    "develop": {
+        "curio": {
+            "hashes": [
+                "sha256:51d1a7b49b4f8dd1486ac785c72d522962e93ccfdcfc1f818f5c7553a307b5ef"
+            ],
+            "version": "==0.9"
+        },
+        "ifaddr": {
+            "hashes": [
+                "sha256:1f9e8a6ca6f16db5a37d3356f07b6e52344f6f9f7e806d618537731669eb1a94",
+                "sha256:d1f603952f0a71c9ab4e705754511e4e03b02565bc4cec7188ad6415ff534cd3"
+            ],
+            "version": "==0.1.7"
+        },
+        "pygase": {
+            "hashes": [
+                "sha256:3423c66181c2984168bfe208111f442fc897e238b542d1854ed43eefe8d135c6",
+                "sha256:b1c8a129c1aade08fa9e14b69b747c56273e1212ff47b49a85c49dd500fc6151"
+            ],
+            "index": "pypi",
+            "version": "==0.3.1"
+        },
+        "u-msgpack-python": {
+            "hashes": [
+                "sha256:0eb339ae27ec3085945244d17b74fd1ed875e866974d63caaa85d90fca9060a7",
+                "sha256:b7e7d433cab77171a4c752875d91836f3040306bab5063fb6dbe11f64ea69551"
+            ],
+            "version": "==2.7.1"
+        }
+    }
+}
