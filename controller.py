@@ -2,16 +2,12 @@
 from model import Plump, Round
 
 
-players = ['Agge', 'Lise']
-duration = 3
-# duration = 5
-# duration = 10
-# duration = 15
-
-
 if __name__ == '__main__':
-    game = Plump()
-    game.setup_game(players, duration)
+    bots = 2
+    players = ['Agge'] + [None for _ in range(bots)]
+    duration = 3
+    game = Plump(players, duration)
+
     while True:
         if game.game_over:
             break

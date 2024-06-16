@@ -86,14 +86,21 @@ class Player:
     ]
 
     def __init__(self, name='', score=0):
-        self.name = name
-        if not name:
-            randint = random.randint(0, len(self.bot_names)-1)
-            self.name = self.bot_names[randint]
+        self.is_bot = self._is_bot(name)
+        self.name = self._get_name(name)
         self.hand = Hand()
         self.score = score
         self.guess = 0
         self.round_wins = 0
+
+    def _is_bot(self, name):
+        return False if name else True
+
+    def _get_name(self, name):
+        if not name:
+            randint = random.randint(0, len(self.bot_names)-1)
+            name = self.bot_names[randint]
+        return name
 
     def __str__(self):
         return self.name
@@ -121,6 +128,7 @@ class Round:
         self.dealt = {player: None for player in self.players}
         self.start_index = 0
         self.last_win = None
+        self.instructions = ''
 
     def _part_round_end(self):
         # update self.wins based on self.dealt
@@ -140,10 +148,10 @@ class Round:
         # set round winner for next round
         self.last_win = highest[0]
         # print standings
-        print('\nThe wins so far in this round are:')
-        for player, score in self.wins.items():
-            print(player, score)
-        print('\n')
+        # print('\nThe wins so far in this round are:')
+        # for player, score in self.wins.items():
+        #     print(player, score)
+        # print('\n')
 
     def _check_valid_play(self):
         pass
@@ -179,11 +187,17 @@ class Round:
         guesses = [player.guess for player in self.players]
         return guesses.index(max(guesses))
 
+    def _set_state(self):
+        state = {
+            
+        }
+
     def play_round(self):
         for i in range(self.round):
             self.start_index = self._get_first_player()
             self.first_player = self.players[self.start_index]
             print(f'\n{self.first_player} starts playing\n')
+            self.instructions = f'\n{self.first_player} starts playing\n'
             for j in range(len(self.players)):
                 player = self.players[(self.start_index + j) % len(self.players)]
                 print(f'\t{player}\'s hand: {player.hand.list_()}, with guess {player.guess}')
@@ -268,11 +282,17 @@ class Plump:
         15: [2,3,4,5,6,7,8,9,8,7,6,5,4,3,2],
     }
 
-    def __init__(self):
+    def __init__(self, player_list, duration):
         self.players = []
         self.rounds = []
         self.round_count = 0
         self.game_over = False
+        self._setup_game(player_list, duration)
+
+    def _setup_game(self, player_list, duration):
+        self.rounds = self.round_options[duration]
+        for player in player_list:
+            self.players.append(Player(player))
 
     def _arrange_wrt_dealer(self):
         tmp = []
@@ -287,11 +307,6 @@ class Plump:
                     player.score += 5
                 else:
                     player.score += wins * 10
-
-    def setup_game(self, player_list, duration):
-        self.rounds = self.round_options[duration]
-        for player in player_list:
-            self.players.append(Player(player))
 
     def update_state(self, result):
         if self.round_count == len(self.rounds) - 1:
@@ -310,3 +325,24 @@ class Plump:
             "game_over": self.game_over,
         }
         return state
+
+    # def iterate(self):
+    #     if self.game_over:
+    #         return self.get_state()
+
+    #     round_count = self.round_count
+    #     round = Round(self.rounds[round_count], round_count, self.players)
+
+
+    #     # result = round.play()
+    #     round.init_round()
+    #     round.deal()
+    #     round.guess_wins()
+    #     round.play_round()
+    #     result = round.wins
+
+
+    #     self.update_state(result)
+    #     print(self.get_state())
+
+    #     return self.get_state()
